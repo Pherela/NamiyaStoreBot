@@ -30,7 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         waiting_user = chat_id
         await context.bot.send_message(chat_id=chat_id, text="Waiting for another user to start a conversation...")
     else:
-        roles = ['Storyteller', 'Listener']
+        roles = ['Helper', 'Seeker']
         random.shuffle(roles)
         await context.bot.send_message(chat_id=waiting_user, text=f"You've been paired with another user! You are the {roles[0]}.")
         await context.bot.send_message(chat_id=chat_id, text=f"You've been paired with another user! You are the {roles[1]}.")
@@ -39,6 +39,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         turns[roles[0]] = waiting_user
         turns[roles[1]] = chat_id
         waiting_user = None
+
+async def helper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global waiting_user
+    chat_id = update.effective_chat.id
+    waiting_user = chat_id
+    turns['Helper'] = chat_id
+    await context.bot.send_message(chat_id=chat_id, text="You are now a Helper. Waiting for a Seeker...")
+
+async def seeker(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    global waiting_user
+    chat_id = update.effective_chat.id
+    if waiting_user is not None:
+        await context.bot.send_message(chat_id=waiting_user, text=f"You've been paired with a Seeker! You are the Helper.")
+        await context.bot.send_message(chat_id=chat_id, text=f"You've been paired with a Helper!")
+        paired_users[waiting_user] = chat_id
+        paired_users[chat_id] = waiting_user
+        turns['Seeker'] = chat_id
+        waiting_user = None
+    else:
+        await context.bot.send_message(chat_id=chat_id, text="No Helpers available at the moment. Please wait...")
+
+
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global waiting_user, paired_users, turns
@@ -79,6 +101,12 @@ if __name__ == '__main__':
     
     stop_handler = CommandHandler('stop', stop)
     application.add_handler(stop_handler)
+    
+    helper_handler = CommandHandler('helper', helper)
+    application.add_handler(helper_handler)
+    
+    seeker_handler = CommandHandler('seeker', seeker)
+    application.add_handler(seeker_handler)
     
     text_handler = MessageHandler(non_command_text_filter, handle_text)
     application.add_handler(text_handler)
