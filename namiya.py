@@ -28,7 +28,7 @@ class MiracleofNamiyaStoreBot:
                 writer.writerow(['chat_id', 'rating'])
     def set_commands(self, cmds):
         for lc in cmds[0].keys() - {'cmd'}:
-            self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], lc)    
+            self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], language_code=lc)    
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
