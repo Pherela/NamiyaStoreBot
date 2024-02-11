@@ -1,11 +1,10 @@
 import os
 import telebot
 import random
+import csv
 from telebot import util
 from dotenv import load_dotenv
 
-
-#TODO Implement a rating system where users can rate the responses they receive from helpers just use csv for now
 class MiracleofNamiyaStoreBot:
     def __init__(self, token):
         self.bot = telebot.TeleBot(token)
@@ -23,19 +22,14 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
+        self.bot.message_handler(commands=['rate'])(self.rate_response)
 
-    #TODO FIX WHERE /HELPER AND /SEEKER COMMAND NOT RETURNING ANYTHING
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
                 chosen_role = self.commands[message.text]
-                if message.text == '/start' or message.text == '/random':
-                    chosen_role = random.choice(self.roles)  # Need to be here otherwise error
-                    self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
-                    self.user_roles[message.chat.id] = chosen_role
-            else:
-                self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
-
+                self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+                self.user_roles[message.chat.id] = chosen_role
 
     def forward_message(self, message):
         if self.user_roles.get(message.chat.id) == 'seeker':
@@ -48,6 +42,14 @@ class MiracleofNamiyaStoreBot:
         if message.reply_to_message and message.reply_to_message.message_id in self.forwarded_messages:
             original_chat_id = self.forwarded_messages[message.reply_to_message.message_id]
             self.bot.send_message(original_chat_id, message.text)
+
+    def rate_response(self, message):
+        if message.text.startswith('/rate'):
+            _, rating = message.text.split()
+            with open('ratings.csv', 'a') as f:
+                writer = csv.writer(f)
+                writer.writerow([message.chat.id, rating])
+            self.bot.reply_to(message, "Thank you for your feedback!")
 
     def start_polling(self):
         self.bot.polling(none_stop=True, interval=0, timeout=20)
