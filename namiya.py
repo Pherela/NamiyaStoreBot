@@ -22,11 +22,11 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
         self.bot.message_handler(commands=['rate'])(self.rate_response)
 
-        self.bot.types.BotCommand("start", "Start the bot"),
-        self.bot.types.BotCommand("random", "Assign a random role"),
-        self.bot.types.BotCommand("helper", "Choose the role of helper"),
-        self.bot.types.BotCommand("seeker", "Choose the role of seeker"),
-        self.bot.types.BotCommand("rate", "Rate a response")
+        self.types.BotCommand("start", "Start the bot"),
+        self.types.BotCommand("random", "Assign a random role"),
+        self.types.BotCommand("helper", "Choose the role of helper"),
+        self.types.BotCommand("seeker", "Choose the role of seeker"),
+        self.types.BotCommand("rate", "Rate a response")
         # Create the file if it does not exist
         if not os.path.exists('ratings.csv'):
             with open('ratings.csv', 'w') as f:
