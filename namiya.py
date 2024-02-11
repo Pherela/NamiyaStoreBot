@@ -25,9 +25,9 @@ class MiracleofNamiyaStoreBot:
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in ['/helper', '/seeker', '/start', '/random']:
-            chosen_role = self.commands[message.text]
-            self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
-            self.user_roles[message.chat.id] = chosen_role
+                chosen_role = self.commands[message.text]
+                self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+                self.user_roles[message.chat.id] = chosen_role
             else:
                 self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
         else:
