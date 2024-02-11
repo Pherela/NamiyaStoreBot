@@ -1,114 +1,38 @@
 import os
+import telebot
 import random
-import dotenv
-import logging
-from telegram import Update, Message
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from dotenv import load_dotenv
 
-dotenv.load_dotenv('./.env')
+class MiracleofNamiyaStoreBot:
+    def __init__(self, token):
+        self.bot = telebot.TeleBot(token)
+        self.user_roles = {}
+        self.roles = ['helper', 'seeker']
+        self.messages = {
+            '/start': "Welcome! You have been randomly assigned the role of {}.",
+            '/random': "You have been randomly assigned the role of {}.",
+            '/helper': "You have chosen the role of helper.",
+            '/seeker': "You have chosen the role of seeker."
+        }
+        self.commands = {command: role for command, role in zip(['/helper', '/seeker', '/start', '/random'], self.roles + [None, None])}
+        self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
+        self.bot.message_handler(func=lambda message: True)(self.forward_message)
 
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+    def assign_role(self, message):
+        chosen_role = self.commands[message.text] if message.text in ['/helper', '/seeker'] else random.choice(self.roles)
+        self.user_roles[message.chat.id] = chosen_role  # Save the user's role
+        self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
 
-class NonCommandTextFilter(filters.BaseFilter):
-    def filter(self, message: Message) -> bool:
-        return message.text is not None and not message.text.startswith('/')
+    def forward_message(self, message):
+        if self.user_roles.get(message.chat.id) == 'seeker':
+            for user_id, role in self.user_roles.items():
+                if role == 'helper':
+                    self.bot.forward_message(user_id, message.chat.id, message.message_id)
 
-non_command_text_filter = NonCommandTextFilter()
+    def start_polling(self):
+        self.bot.polling()
 
-waiting_user = None
-paired_users = {}
-turns = { 'Storyteller': None, 'Listener': None }
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global waiting_user
-    chat_id = update.effective_chat.id
-
-    if waiting_user is None:
-        waiting_user = chat_id
-        await context.bot.send_message(chat_id=chat_id, text="Waiting for another user to start a conversation...")
-    else:
-        roles = ['Helper', 'Seeker']
-        random.shuffle(roles)
-        await context.bot.send_message(chat_id=waiting_user, text=f"You've been paired with another user! You are the {roles[0]}.")
-        await context.bot.send_message(chat_id=chat_id, text=f"You've been paired with another user! You are the {roles[1]}.")
-        paired_users[waiting_user] = chat_id
-        paired_users[chat_id] = waiting_user
-        turns[roles[0]] = waiting_user
-        turns[roles[1]] = chat_id
-        waiting_user = None
-
-async def helper(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global waiting_user
-    chat_id = update.effective_chat.id
-    waiting_user = chat_id
-    turns['Helper'] = chat_id
-    await context.bot.send_message(chat_id=chat_id, text="You are now a Helper. Waiting for a Seeker...")
-
-async def seeker(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global waiting_user
-    chat_id = update.effective_chat.id
-    if waiting_user is not None:
-        await context.bot.send_message(chat_id=waiting_user, text=f"You've been paired with a Seeker! You are the Helper.")
-        await context.bot.send_message(chat_id=chat_id, text=f"You've been paired with a Helper!")
-        paired_users[waiting_user] = chat_id
-        paired_users[chat_id] = waiting_user
-        turns['Seeker'] = chat_id
-        waiting_user = None
-    else:
-        await context.bot.send_message(chat_id=chat_id, text="No Helpers available at the moment. Please wait...")
-
-
-
-async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global waiting_user, paired_users, turns
-    chat_id = update.effective_chat.id
-
-    if chat_id in paired_users:
-        paired_chat_id = paired_users[chat_id]
-        await context.bot.send_message(chat_id=chat_id, text="You've left the conversation.")
-        await context.bot.send_message(chat_id=paired_chat_id, text="Your partner has left the conversation.")
-        del paired_users[chat_id]
-        del paired_users[paired_chat_id]
-        if turns['Storyteller'] == chat_id or turns['Storyteller'] == paired_chat_id:
-            turns['Storyteller'] = None
-        if turns['Listener'] == chat_id or turns['Listener'] == paired_chat_id:
-            turns['Listener'] = None
-    elif waiting_user == chat_id:
-        waiting_user = None
-        await context.bot.send_message(chat_id=chat_id, text="You've left the queue.")
-
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    from_chat_id = update.effective_chat.id
-    if from_chat_id in paired_users:
-        to_chat_id = paired_users[from_chat_id]
-        if from_chat_id == turns['Storyteller']:
-            reply = update.message.text
-            await context.bot.send_message(chat_id=to_chat_id, text=reply)
-            turns['Storyteller'], turns['Listener'] = turns['Listener'], turns['Storyteller']
-        else:
-            await context.bot.send_message(chat_id=from_chat_id, text="It's not your turn yet.")
-
-
-if __name__ == '__main__':
-    TOKEN = os.getenv('TELEGRAM_TOKEN')
-    application = ApplicationBuilder().token(TOKEN).build()
-    
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
-    
-    stop_handler = CommandHandler('stop', stop)
-    application.add_handler(stop_handler)
-    
-    helper_handler = CommandHandler('helper', helper)
-    application.add_handler(helper_handler)
-    
-    seeker_handler = CommandHandler('seeker', seeker)
-    application.add_handler(seeker_handler)
-    
-    text_handler = MessageHandler(non_command_text_filter, handle_text)
-    application.add_handler(text_handler)
-    
-    application.run_polling()
+if __name__ == "__main__":
+    load_dotenv()
+    bot_token = os.getenv('TELEGRAM_TOKEN')
+    MiracleofNamiyaStoreBot(bot_token).start_polling()
