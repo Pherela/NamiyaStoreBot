@@ -1,13 +1,12 @@
 import os
-import telebot
 import random
 import csv
-from telebot import util, types
+from telebot import TeleBot, types, util
 from dotenv import load_dotenv
 
 class MiracleofNamiyaStoreBot:
     def __init__(self, token):
-        self.bot = telebot.TeleBot(token)
+        self.bot = TeleBot(token)
         self.user_roles = {}
         self.roles = ['helper', 'seeker']
         self.messages = {
