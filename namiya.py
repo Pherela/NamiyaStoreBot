@@ -27,7 +27,7 @@ class MiracleofNamiyaStoreBot:
         "helper": {"en": "Assist in a miracle", "id": "Bantu dalam keajaiban"},
         "seeker": {"en": "Seek a miracle", "id": "Cari keajaiban"},
         "rate": {"en": "Rate a miracle", "id": "Nilai keajaiban"},
-        "help": {"en": "Need guidance?", "id": "Butuh bimbingan?"}
+        "help": {"en": "Need guidance?", "id": "Butuh bantuan?"}
         }
 
         list_of_commands_en = [types.BotCommand(command, desc["en"]) for command, desc in commands_descriptions.items()]
