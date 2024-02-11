@@ -22,6 +22,7 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
+    #TODO FIX WHERE /START COMMAND ALWAYS RETURN SEEKER
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
