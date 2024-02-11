@@ -80,3 +80,4 @@ if __name__ == "__main__":
     load_dotenv('./.env')
     bot_token = os.getenv('TELEGRAM_TOKEN')
     bot = MiracleofNamiyaStoreBot(bot_token)
+    bot.start_polling()
