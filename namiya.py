@@ -2,7 +2,7 @@ import os
 import telebot
 import random
 import csv
-from telebot import util
+from telebot import util, types
 from dotenv import load_dotenv
 
 class MiracleofNamiyaStoreBot:
