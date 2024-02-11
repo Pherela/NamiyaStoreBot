@@ -28,7 +28,7 @@ class MiracleofNamiyaStoreBot:
         types.BotCommand("seeker", "Choose the role of seeker"),
         types.BotCommand("rate", "Rate a response")
         ]
-        bot.set_my_commands(commands=list_of_commands, language_code="en")
+        self bot.set_my_commands(commands=list_of_commands, language_code="en")
         # Create the file if it does not exist
         if not os.path.exists('ratings.csv'):
             with open('ratings.csv', 'w') as f:
