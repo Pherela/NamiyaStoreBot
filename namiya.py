@@ -16,7 +16,7 @@ class MiracleofNamiyaStoreBot:
             '/helper': "You have chosen the role of helper.",
             '/seeker': "You have chosen the role of seeker."
         }
-        self.commands = {command: role for command, role in zip(['/helper', '/seeker'], self.roles + [random.choice(self.roles) for _ in range(2)])}
+        self.commands = ['/helper', '/seeker', '/start', '/random']
         self.forwarded_messages = {}
 
         self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
@@ -33,7 +33,10 @@ class MiracleofNamiyaStoreBot:
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
-                chosen_role = self.commands[message.text]
+                if message.text == '/start' or message.text == '/random':
+                    chosen_role = random.choice(self.roles)
+                else:
+                    chosen_role = self.roles[self.commands.index(message.text)]
                 self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
                 self.user_roles[message.chat.id] = chosen_role
 
