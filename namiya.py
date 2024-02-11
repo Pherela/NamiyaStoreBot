@@ -62,7 +62,7 @@ class MiracleofNamiyaStoreBot:
             self.bot.reply_to(message, "Only seekers can rate responses.")
 
     def start_polling(self):
-        self.bot.infinity_polling(long_polling_timeout=20, logger_level="INFO", interval=0, timeout=20)
+        self.bot.infinity_polling(long_polling_timeout=20)
 
 if __name__ == "__main__":
     load_dotenv('./.env')
