@@ -16,13 +16,19 @@ class MiracleofNamiyaStoreBot:
             '/helper': "You have chosen the role of helper.",
             '/seeker': "You have chosen the role of seeker."
         }
-        self.commands = {command: role for command, role in zip(['/helper', '/seeker', '/start', '/random'], self.roles + [random.choice(self.roles), random.choice(self.roles)])}
+        self.commands = {command: role for command, role in zip(['/helper', '/seeker'], self.roles + [random.choice(self.roles) for _ in range(2)])}
         self.forwarded_messages = {}
 
         self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
         self.bot.message_handler(commands=['rate'])(self.rate_response)
+
+        # Create the file if it does not exist
+        if not os.path.exists('ratings.csv'):
+            with open('ratings.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['chat_id', 'rating'])
 
     def assign_role(self, message):
         if util.is_command(message.text):
@@ -44,12 +50,14 @@ class MiracleofNamiyaStoreBot:
             self.bot.send_message(original_chat_id, message.text)
 
     def rate_response(self, message):
-        if message.text.startswith('/rate'):
+        if message.text.startswith('/rate') and self.user_roles.get(message.chat.id) == 'seeker':
             _, rating = message.text.split()
             with open('ratings.csv', 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow([message.chat.id, rating])
             self.bot.reply_to(message, "Thank you for your feedback!")
+        else:
+            self.bot.reply_to(message, "Only seekers can rate responses.")
 
     def start_polling(self):
         self.bot.polling(none_stop=True, interval=0, timeout=20)
