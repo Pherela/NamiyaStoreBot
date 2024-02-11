@@ -21,18 +21,20 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
         self.bot.message_handler(commands=['rate'])(self.rate_response)
-
-        
-        # Create the file if it does not exist
-        if not os.path.exists('ratings.csv'):
-            with open('ratings.csv', 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(['chat_id', 'rating'])
+        list_of_commands = [
         types.BotCommand("start", "Start the bot"),
         types.BotCommand("random", "Assign a random role"),
         types.BotCommand("helper", "Choose the role of helper"),
         types.BotCommand("seeker", "Choose the role of seeker"),
         types.BotCommand("rate", "Rate a response")
+        ]
+        bot.set_my_commands(commands=list_of_commands, language_code="en")
+        # Create the file if it does not exist
+        if not os.path.exists('ratings.csv'):
+            with open('ratings.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['chat_id', 'rating'])
+        
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
