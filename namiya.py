@@ -33,6 +33,6 @@ class MiracleofNamiyaStoreBot:
         self.bot.polling()
 
 if __name__ == "__main__":
-    load_dotenv()
+    load_dotenv('./.env')
     bot_token = os.getenv('TELEGRAM_TOKEN')
     MiracleofNamiyaStoreBot(bot_token).start_polling()
