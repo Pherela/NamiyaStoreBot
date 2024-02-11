@@ -4,6 +4,8 @@ import random
 from telebot import util
 from dotenv import load_dotenv
 
+
+#TODO Implement a rating system where users can rate the responses they receive from helpers just use csv for now
 class MiracleofNamiyaStoreBot:
     def __init__(self, token):
         self.bot = telebot.TeleBot(token)
@@ -22,7 +24,7 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
-    #TODO FIX WHERE /START COMMAND ALWAYS RETURN SEEKER
+    #TODO FIX WHERE /HELPER AND /SEEKER COMMAND NOT RETURNING ANYTHING
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
