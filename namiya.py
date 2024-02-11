@@ -2,7 +2,7 @@ import os
 import telebot
 import random
 import csv
-from telebot import util
+from telebot import util, types
 from dotenv import load_dotenv
 
 class MiracleofNamiyaStoreBot:
@@ -68,4 +68,12 @@ if __name__ == "__main__":
     load_dotenv('./.env')
     bot_token = os.getenv('TELEGRAM_TOKEN')
     bot = MiracleofNamiyaStoreBot(bot_token)
+    list_of_commands = [
+    types.BotCommand("start", "Start the bot"),
+    types.BotCommand("random", "Assign a random role"),
+    types.BotCommand("helper", "Choose the role of helper"),
+    types.BotCommand("seeker", "Choose the role of seeker"),
+    types.BotCommand("rate", "Rate a response")
+    ]
+    bot.set_my_commands(list_of_commands)
     bot.start_polling()
