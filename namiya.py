@@ -11,8 +11,6 @@ class MiracleofNamiyaStoreBot:
         self.user_roles = {}
         self.roles = ['helper', 'seeker']
         self.messages = {
-            '/start': "Welcome! You have been randomly assigned the role of {}.",
-            '/random': "You have been randomly assigned the role of {}.",
             '/helper': "You have chosen the role of helper.",
             '/seeker': "You have chosen the role of seeker."
         }
@@ -35,9 +33,10 @@ class MiracleofNamiyaStoreBot:
             if message.text in self.commands:
                 if message.text == '/start' or message.text == '/random':
                     chosen_role = random.choice(self.roles)
+                    self.bot.reply_to(message, "You have been randomly assigned the role of {}.".format(chosen_role))
                 else:
                     chosen_role = self.roles[self.commands.index(message.text)]
-                self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+                    self.bot.reply_to(message, self.messages[message.text])
                 self.user_roles[message.chat.id] = chosen_role
 
     def forward_message(self, message):
