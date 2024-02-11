@@ -20,25 +20,15 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
         self.bot.message_handler(commands=['rate'])(self.rate_response)
-        commands_descriptions = {
-        "start": {"en": "Begin your journey at Namiya", "id": "Mulai perjalanan Anda di Namiya"},
-        "random": {"en": "Discover a random miracle", "id": "Temukan keajaiban acak"},
-        "helper": {"en": "Assist in a miracle", "id": "Bantu dalam keajaiban"},
-        "seeker": {"en": "Seek a miracle", "id": "Cari keajaiban"},
-        "rate": {"en": "Rate a miracle", "id": "Nilai keajaiban"},
-        "help": {"en": "Need guidance?", "id": "Butuh bantuan?"}
-        }
-
-        list_of_commands_en = [types.BotCommand(command, desc["en"]) for command, desc in commands_descriptions.items()]
-        list_of_commands_id = [types.BotCommand(command, desc["id"]) for command, desc in commands_descriptions.items()]
-        self.bot.set_my_commands(commands=list_of_commands_en, language_code="en")
-        self.bot.set_my_commands(commands=list_of_commands_id, language_code="id")
+    
         # Create the file if it does not exist
         if not os.path.exists('ratings.csv'):
             with open('ratings.csv', 'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(['chat_id', 'rating'])
-        
+    def set_commands(self, cmds):
+        for lc in cmds[0].keys() - {'cmd'}:
+            self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], lc)    
     def assign_role(self, message):
         if util.is_command(message.text):
             if message.text in self.commands:
@@ -79,4 +69,13 @@ if __name__ == "__main__":
     load_dotenv('./.env')
     bot_token = os.getenv('TELEGRAM_TOKEN')
     bot = MiracleofNamiyaStoreBot(bot_token)
+    cmds = [
+    {"cmd": "start", "en": "Begin", "id": "Mulai"},
+    {"cmd": "random", "en": "Discover", "id": "Temukan"},
+    {"cmd": "helper", "en": "Assist", "id": "Bantu"},
+    {"cmd": "seeker", "en": "Seek", "id": "Cari"},
+    {"cmd": "rate", "en": "Rate", "id": "Nilai"},
+    {"cmd": "help", "en": "Guide on how to use the bot", "id": "Panduan cara menggunakan bot"}
+    ]
+    bot.set_commands(cmds)
     bot.start_polling()
