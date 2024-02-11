@@ -15,11 +15,14 @@ class MiracleofNamiyaStoreBot:
             '/seeker': "You have chosen the role of seeker."
         }
         self.commands = {command: role for command, role in zip(['/helper', '/seeker', '/start', '/random'], self.roles + [None, None])}
+        self.forwarded_messages = {}
+
         self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
+        self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
     def assign_role(self, message):
-        chosen_role = self.commands[message.text] if message.text in ['/helper', '/seeker'] else random.choice(self.roles)
+        chosen_role = self.commands.get(message.text, random.choice(self.roles))
         self.user_roles[message.chat.id] = chosen_role  # Save the user's role
         self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
 
@@ -27,12 +30,19 @@ class MiracleofNamiyaStoreBot:
         if self.user_roles.get(message.chat.id) == 'seeker':
             for user_id, role in self.user_roles.items():
                 if role == 'helper':
-                    self.bot.forward_message(user_id, message.chat.id, message.message_id)
+                    forwarded_message = self.bot.forward_message(user_id, message.chat.id, message.message_id)
+                    self.forwarded_messages[forwarded_message.message_id] = message.chat.id  # Save the original chat id
+
+    def reply_to_seeker(self, message):
+        if message.reply_to_message and message.reply_to_message.message_id in self.forwarded_messages:
+            original_chat_id = self.forwarded_messages[message.reply_to_message.message_id]
+            self.bot.send_message(original_chat_id, message.text)
 
     def start_polling(self):
-        self.bot.polling()
+        self.bot.polling(none_stop=True, interval=0, timeout=20)
 
 if __name__ == "__main__":
     load_dotenv('./.env')
     bot_token = os.getenv('TELEGRAM_TOKEN')
-    MiracleofNamiyaStoreBot(bot_token).start_polling()
+    bot = MiracleofNamiyaStoreBot(bot_token)
+    bot.start_polling()
