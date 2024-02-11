@@ -75,5 +75,5 @@ if __name__ == "__main__":
     types.BotCommand("seeker", "Choose the role of seeker"),
     types.BotCommand("rate", "Rate a response")
     ]
-    bot.set_my_commands(list_of_commands)
+    bot.BotCommand(list_of_commands)
     bot.start_polling()
