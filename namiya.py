@@ -30,9 +30,6 @@ class MiracleofNamiyaStoreBot:
                 self.user_roles[message.chat.id] = chosen_role
             else:
                 self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
-        else:
-            self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
-
 
 
     def forward_message(self, message):
