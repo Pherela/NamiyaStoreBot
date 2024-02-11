@@ -1,6 +1,7 @@
 import os
 import telebot
 import random
+from telebot import util
 from dotenv import load_dotenv
 
 class MiracleofNamiyaStoreBot:
@@ -14,7 +15,7 @@ class MiracleofNamiyaStoreBot:
             '/helper': "You have chosen the role of helper.",
             '/seeker': "You have chosen the role of seeker."
         }
-        self.commands = {command: role for command, role in zip(['/helper', '/seeker', '/start', '/random'], self.roles + [None, None])}
+        self.commands = {command: role for command, role in zip(['/helper', '/seeker', '/start', '/random'], self.roles + [random.choice(self.roles), random.choice(self.roles)])}
         self.forwarded_messages = {}
 
         self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
@@ -22,9 +23,15 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
     def assign_role(self, message):
-        chosen_role = self.commands.get(message.text, random.choice(self.roles))
-        self.user_roles[message.chat.id] = chosen_role  # Save the user's role
-        self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+        if util.is_command(message.text) and message.text in ['/helper', '/seeker']:
+            chosen_role = self.commands[message.text]
+        elif util.is_command(message.text) and message.text in ['/start', '/random']:
+            chosen_role = random.choice(self.roles)
+            self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+        else:
+            self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
+        self.user_roles[message.chat.id] = chosen_role
+
 
     def forward_message(self, message):
         if self.user_roles.get(message.chat.id) == 'seeker':
