@@ -27,10 +27,12 @@ class MiracleofNamiyaStoreBot:
         if util.is_command(message.text):
             if message.text in self.commands:
                 chosen_role = self.commands[message.text]
-                self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
-                self.user_roles[message.chat.id] = chosen_role
+                if message.text == '/start' or message.text == '/random':
+                    chosen_role = random.choice(self.roles)  # Need to be here otherwise error
+                    self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+                    self.user_roles[message.chat.id] = chosen_role
             else:
-                self.bot.reply_to(message, "Invalid command. Please try again with a valid command.") #TODO THIS THING NOT WORKING
+                self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
 
 
     def forward_message(self, message):
