@@ -23,14 +23,16 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
     def assign_role(self, message):
-        if util.is_command(message.text) and message.text in ['/helper', '/seeker']:
+        if util.is_command(message.text):
+            if message.text in ['/helper', '/seeker', '/start', '/random']:
             chosen_role = self.commands[message.text]
-        elif util.is_command(message.text) and message.text in ['/start', '/random']:
-            chosen_role = random.choice(self.roles)
             self.bot.reply_to(message, self.messages[message.text].format(chosen_role))
+            self.user_roles[message.chat.id] = chosen_role
+            else:
+                self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
         else:
             self.bot.reply_to(message, "Invalid command. Please try again with a valid command.")
-        self.user_roles[message.chat.id] = chosen_role
+
 
 
     def forward_message(self, message):
