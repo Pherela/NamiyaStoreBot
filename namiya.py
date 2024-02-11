@@ -21,14 +21,19 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
         self.bot.message_handler(commands=['rate'])(self.rate_response)
-        list_of_commands = [
-        types.BotCommand("start", "Start the bot"),
-        types.BotCommand("random", "Assign a random role"),
-        types.BotCommand("helper", "Choose the role of helper"),
-        types.BotCommand("seeker", "Choose the role of seeker"),
-        types.BotCommand("rate", "Rate a response")
-        ]
-        self.bot.set_my_commands(commands=list_of_commands, language_code="en")
+        commands_descriptions = {
+        "start": {"en": "Begin your journey at Namiya", "id": "Mulai perjalanan Anda di Namiya"},
+        "random": {"en": "Discover a random miracle", "id": "Temukan keajaiban acak"},
+        "helper": {"en": "Assist in a miracle", "id": "Bantu dalam keajaiban"},
+        "seeker": {"en": "Seek a miracle", "id": "Cari keajaiban"},
+        "rate": {"en": "Rate a miracle", "id": "Nilai keajaiban"},
+        "help": {"en": "Need guidance?", "id": "Butuh bimbingan?"}
+        }
+
+        list_of_commands_en = [types.BotCommand(command, desc["en"]) for command, desc in commands_descriptions.items()]
+        list_of_commands_id = [types.BotCommand(command, desc["id"]) for command, desc in commands_descriptions.items()]
+        self.bot.set_my_commands(commands=list_of_commands_en, language_code="en")
+        self.bot.set_my_commands(commands=list_of_commands_id, language_code="id")
         # Create the file if it does not exist
         if not os.path.exists('ratings.csv'):
             with open('ratings.csv', 'w') as f:
@@ -75,12 +80,3 @@ if __name__ == "__main__":
     load_dotenv('./.env')
     bot_token = os.getenv('TELEGRAM_TOKEN')
     bot = MiracleofNamiyaStoreBot(bot_token)
-    list_of_commands = [
-    types.BotCommand("start", "Start the bot"),
-    types.BotCommand("random", "Assign a random role"),
-    types.BotCommand("helper", "Choose the role of helper"),
-    types.BotCommand("seeker", "Choose the role of seeker"),
-    types.BotCommand("rate", "Rate a response")
-    ]
-    #bot.BotCommand(list_of_commands)
-    bot.start_polling()
