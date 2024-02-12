@@ -14,9 +14,6 @@ class MiracleofNamiyaStoreBot:
         self.forwarded_messages = {}
 
         self.bot.message_handler(commands=['start'])(self.assign_role)
-        self.bot.message_handler(func=lambda message: self.user_roles.get(message.chat.id) == 'seeker' and not message.text.startswith('/'), content_types=['text'])(self.write_letter)
-        self.bot.message_handler(func=lambda message: self.user_roles.get(message.chat.id) == 'seeker', content_types=['text'])(self.forward_message)
-        self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
     def setup_database(self):
         self.conn = sqlite3.connect('user_roles.db', check_same_thread=False)
@@ -27,41 +24,17 @@ class MiracleofNamiyaStoreBot:
                 role TEXT
             )
         ''')
-        self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS letters (
-                chat_id INTEGER,
-                letter TEXT
-            )
-        ''')
-        self.conn.commit()
         
     def set_commands(self, cmds):
         for lc in cmds[0].keys() - {'cmd'}:
-            self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], language_code=lc)    
+            self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], language_code=lc)
+            
     def assign_role(self, message):
         if message.text == '/start':
             chosen_role = random.choice(self.roles)
             self.cursor.execute('REPLACE INTO user_roles VALUES (?, ?)', (message.chat.id, chosen_role))
             self.conn.commit()
             self.bot.send_message(message.chat.id, f"You have been randomly assigned the role of {chosen_role}.")
-    def write_letter(self, message):
-        if self.user_roles.get(message.chat.id) == 'seeker':
-            if message.text is not util.is_command():
-                self.cursor.execute('INSERT INTO letters VALUES (?, ?)', (message.chat.id, message.text))
-                self.conn.commit()
-                self.bot.send_message(message.chat.id, "Your letter has been stored.")
-        
-    def forward_message(self, message):
-        if self.user_roles.get(message.chat.id) == 'seeker':
-            for user_id, role in self.user_roles.items():
-                if role == 'helper':
-                    forwarded_message = self.bot.forward_message(user_id, message.chat.id, message.message_id)
-                    self.forwarded_messages[forwarded_message.message_id] = message.chat.id  # Save the original chat id
-
-    def reply_to_seeker(self, message):
-        if message.reply_to_message and message.reply_to_message.message_id in self.forwarded_messages:
-            original_chat_id = self.forwarded_messages[message.reply_to_message.message_id]
-            self.bot.send_message(original_chat_id, message.text)
             
     def start_polling(self):
         self.bot.infinity_polling(long_polling_timeout=20)
