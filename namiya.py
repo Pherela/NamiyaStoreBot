@@ -2,7 +2,7 @@ import os
 import random
 import sqlite3
 from dotenv import load_dotenv
-from telebot import TeleBot, types
+from telebot import TeleBot, types, util
 
 
 class MiracleofNamiyaStoreBot:
@@ -45,10 +45,11 @@ class MiracleofNamiyaStoreBot:
             self.conn.commit()
             self.bot.send_message(message.chat.id, f"You have been randomly assigned the role of {chosen_role}.")
     def write_letter(self, message):
-        if self.user_roles.get(message.chat.id) == 'seeker' and not message.text.startswith('/'):
-            self.cursor.execute('INSERT INTO letters VALUES (?, ?)', (message.chat.id, message.text))
-            self.conn.commit()
-            self.bot.send_message(message.chat.id, "Your letter has been stored.")
+        if self.user_roles.get(message.chat.id) == 'seeker':
+            if message.text is not util.is_command():
+                self.cursor.execute('INSERT INTO letters VALUES (?, ?)', (message.chat.id, message.text))
+                self.conn.commit()
+                self.bot.send_message(message.chat.id, "Your letter has been stored.")
         
     def forward_message(self, message):
         if self.user_roles.get(message.chat.id) == 'seeker':
