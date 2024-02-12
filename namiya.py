@@ -1,7 +1,9 @@
 import os
 import random
-from telebot import TeleBot, types
+import sqlite3
 from dotenv import load_dotenv
+from telebot import TeleBot, types
+
 
 class MiracleofNamiyaStoreBot:
     def __init__(self, token):
