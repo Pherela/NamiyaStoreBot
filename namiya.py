@@ -1,6 +1,5 @@
 import os
 import random
-import csv
 from telebot import TeleBot, types, util
 from dotenv import load_dotenv
 
@@ -21,11 +20,6 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
         self.bot.message_handler(commands=['rate'])(self.rate_response)
     
-        # Create the file if it does not exist
-        if not os.path.exists('ratings.csv'):
-            with open('ratings.csv', 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(['chat_id', 'rating'])
     def set_commands(self, cmds):
         for lc in cmds[0].keys() - {'cmd'}:
             self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], language_code=lc)    
@@ -51,17 +45,7 @@ class MiracleofNamiyaStoreBot:
         if message.reply_to_message and message.reply_to_message.message_id in self.forwarded_messages:
             original_chat_id = self.forwarded_messages[message.reply_to_message.message_id]
             self.bot.send_message(original_chat_id, message.text)
-
-    def rate_response(self, message):
-        if message.text.startswith('/rate') and self.user_roles.get(message.chat.id) == 'seeker':
-            _, rating = message.text.split()
-            with open('ratings.csv', 'a') as f:
-                writer = csv.writer(f)
-                writer.writerow([message.chat.id, rating])
-            self.bot.reply_to(message, "Thank you for your feedback!")
-        else:
-            self.bot.reply_to(message, "Only seekers can rate responses.")
-
+            
     def start_polling(self):
         self.bot.infinity_polling(long_polling_timeout=20)
 
