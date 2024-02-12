@@ -29,7 +29,7 @@ class MiracleofNamiyaStoreBot:
         
     def set_commands(self):
         for lc in self.cmds[0].keys() - {'cmd'}:
-            self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in self.cmds], language_code=lc)
+            self.bot.set_my_commands([types.BotCommand(cmd['cmd'], cmd[lc]) for cmd in self.cmds], language_code=lc)
             
     def help_page(self, message):
         for cmd in self.cmds:
@@ -41,7 +41,8 @@ class MiracleofNamiyaStoreBot:
                 
     def assign_role(self, message):
         if message.text == '/start':
-            chosen_role = random.choice(self.roles)
+            random.shuffle(self.roles)
+            chosen_role = self.roles[0]
             self.cursor.execute('REPLACE INTO user_roles VALUES (?, ?)', (message.chat.id, chosen_role))
             self.conn.commit()
             for cmd in self.cmds:
