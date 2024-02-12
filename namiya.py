@@ -14,6 +14,8 @@ class MiracleofNamiyaStoreBot:
         self.forwarded_messages = {}
         self.cmds = cmds
         self.bot.message_handler(commands=['start'])(self.assign_role)
+        self.bot.message_handler(commands=['help'])(self.help_page)
+        
 
     def setup_database(self):
         self.conn = sqlite3.connect('user_roles.db', check_same_thread=False)
@@ -29,6 +31,10 @@ class MiracleofNamiyaStoreBot:
         for lc in self.cmds[0].keys() - {'cmd'}:
             self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in self.cmds], language_code=lc)
             
+    def help_page(self, message):
+        help_text = "This is the help page. Here you can find information on how to use the bot."
+        self.bot.send_message(message.chat.id, help_text) 
+        
     def assign_role(self, message):
         if message.text == '/start':
             chosen_role = random.choice(self.roles)
@@ -47,8 +53,10 @@ class MiracleofNamiyaStoreBot:
 if __name__ == "__main__":
     load_dotenv('./.env')
     cmds = [
-    {"cmd": "start", "en": "Begin", "id": "Mulai", "en_helper": "Welcome to Namiya's Store! Let's provide guidance to those in need.", "id_helper": "Selamat datang di Toko Namiya! Mari kita berikan petunjuk kepada mereka yang membutuhkan.", "en_seeker": "Welcome to Namiya's Store! Let's seek answers to your questions.", "id_seeker": "Selamat datang di Toko Namiya! Mari kita cari petunjuk untuk pertanyaan yang Anda miliki."},
-    {"cmd": "help", "en": "Guide on how to use the bot", "id": "Panduan cara menggunakan bot"}
+        {"cmd": "start", "en": "Begin", "id": "Mulai", "en_helper": "Welcome! Let's guide.", "id_helper": "Selamat datang! Mari kita beri petunjuk.", "en_seeker": "Welcome! Let's seek answers.", "id_seeker": "Selamat datang! Mari kita cari petunjuk."},
+        {"cmd": "help", "en": "Guide on how to use the bot", "id": "Panduan cara menggunakan bot"}
     ]
+    bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'), cmds)
+    bot.start_polling()
     bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'), cmds)
     bot.start_polling()
