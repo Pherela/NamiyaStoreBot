@@ -18,7 +18,7 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
 
     def setup_database(self):
-        self.conn = sqlite3.connect('user_roles.db')
+        self.conn = sqlite3.connect('user_roles.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_roles (
