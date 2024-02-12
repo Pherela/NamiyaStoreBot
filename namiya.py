@@ -14,10 +14,10 @@ class MiracleofNamiyaStoreBot:
         self.forwarded_messages = {}
 
         self.bot.message_handler(commands=['start'])(self.assign_role)
-        self.bot.message_handler(func=lambda message: True)(self.forward_message)
+        self.bot.message_handler(func=lambda message: self.user_roles.get(message.chat.id) == 'seeker' and not message.text.startswith('/'), content_types=['text'])(self.write_letter)
+        self.bot.message_handler(func=lambda message: self.user_roles.get(message.chat.id) == 'seeker', content_types=['text'])(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
-        self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.write_letter)
-        
+
     def setup_database(self):
         self.conn = sqlite3.connect('user_roles.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
