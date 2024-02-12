@@ -1,6 +1,6 @@
 import os
 import random
-from telebot import TeleBot, types, util
+from telebot import TeleBot, types
 from dotenv import load_dotenv
 
 class MiracleofNamiyaStoreBot:
@@ -8,31 +8,33 @@ class MiracleofNamiyaStoreBot:
         self.bot = TeleBot(token)
         self.user_roles = {}
         self.roles = ['helper', 'seeker']
-        self.messages = {
-            '/helper': "You have chosen the role of helper.",
-            '/seeker': "You have chosen the role of seeker."
-        }
-        self.commands = ['/helper', '/seeker', '/start', '/random']
+        self.setup_database()
         self.forwarded_messages = {}
 
-        self.bot.message_handler(commands=['start', 'random', 'helper', 'seeker'])(self.assign_role)
+        self.bot.message_handler(commands=['start'])(self.assign_role)
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
-        self.bot.message_handler(commands=['rate'])(self.rate_response)
-    
+
+    def setup_database(self):
+        self.conn = sqlite3.connect('user_roles.db')
+        self.cursor = self.conn.cursor()
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_roles (
+                chat_id INTEGER PRIMARY KEY,
+                role TEXT
+            )
+        ''')
+        self.conn.commit()
+        
     def set_commands(self, cmds):
         for lc in cmds[0].keys() - {'cmd'}:
             self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in cmds], language_code=lc)    
     def assign_role(self, message):
-        if util.is_command(message.text):
-            if message.text in self.commands:
-                if message.text == '/start' or message.text == '/random':
-                    chosen_role = random.choice(self.roles)
-                    self.bot.reply_to(message, "You have been randomly assigned the role of {}.".format(chosen_role))
-                else:
-                    chosen_role = self.roles[self.commands.index(message.text)]
-                    self.bot.reply_to(message, self.messages[message.text])
-                self.user_roles[message.chat.id] = chosen_role
+        if message.text == '/start':
+            chosen_role = random.choice(self.roles)
+            self.cursor.execute('REPLACE INTO user_roles VALUES (?, ?)', (message.chat.id, chosen_role))
+            self.conn.commit()
+            self.bot.send_message(message.chat.id, f"You have been randomly assigned the role of {chosen_role}.")
 
     def forward_message(self, message):
         if self.user_roles.get(message.chat.id) == 'seeker':
@@ -51,8 +53,7 @@ class MiracleofNamiyaStoreBot:
 
 if __name__ == "__main__":
     load_dotenv('./.env')
-    bot_token = os.getenv('TELEGRAM_TOKEN')
-    bot = MiracleofNamiyaStoreBot(bot_token)
+    bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'))
     cmds = [
     {"cmd": "start", "en": "Begin", "id": "Mulai"},
     {"cmd": "random", "en": "Discover", "id": "Temukan"},
