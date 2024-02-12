@@ -8,7 +8,6 @@ from telebot import TeleBot, types, util
 class MiracleofNamiyaStoreBot:
     def __init__(self, token, cmds):
         self.bot = TeleBot(token)
-        self.user_roles = {}
         self.roles = ['helper', 'seeker']
         self.setup_database()
         self.forwarded_messages = {}
@@ -32,12 +31,14 @@ class MiracleofNamiyaStoreBot:
             self.bot.set_my_commands([types.BotCommand(cmd['cmd'], cmd[lc]) for cmd in self.cmds], language_code=lc)
             
     def help_page(self, message):
+        lang_code = message.from_user.language_code
+        self.cursor.execute('SELECT role FROM user_roles WHERE chat_id = ?', (message.chat.id,))
+        role = self.cursor.fetchone()[0]
         for cmd in self.cmds:
             if cmd['cmd'] == 'help':
-                if message.from_user.language_code == 'id':
-                    self.bot.send_message(message.chat.id, cmd[f'id_{self.user_roles[message.chat.id]}'])
-                else:
-                    self.bot.send_message(message.chat.id, cmd[f'en_{self.user_roles[message.chat.id]}'])
+                self.bot.send_message(message.chat.id, cmd[f'{lang_code}_{role}'])
+
+
                 
     def assign_role(self, message):
         if message.text == '/start':
