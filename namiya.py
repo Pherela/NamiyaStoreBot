@@ -32,9 +32,13 @@ class MiracleofNamiyaStoreBot:
             self.bot.set_my_commands([types.BotCommand(c['cmd'], c[lc]) for c in self.cmds], language_code=lc)
             
     def help_page(self, message):
-        help_text = "This is the help page. Here you can find information on how to use the bot."
-        self.bot.send_message(message.chat.id, help_text) 
-        
+        for cmd in self.cmds:
+            if cmd['cmd'] == 'help':
+                if message.from_user.language_code == 'id':
+                    self.bot.send_message(message.chat.id, cmd[f'id_{self.user_roles[message.chat.id]}'])
+                else:
+                    self.bot.send_message(message.chat.id, cmd[f'en_{self.user_roles[message.chat.id]}'])
+                
     def assign_role(self, message):
         if message.text == '/start':
             chosen_role = random.choice(self.roles)
@@ -54,7 +58,7 @@ if __name__ == "__main__":
     load_dotenv('./.env')
     cmds = [
         {"cmd": "start", "en": "Begin", "id": "Mulai", "en_helper": "Welcome! Let's guide.", "id_helper": "Selamat datang! Mari kita beri petunjuk.", "en_seeker": "Welcome! Let's seek answers.", "id_seeker": "Selamat datang! Mari kita cari petunjuk."},
-        {"cmd": "help", "en": "Guide on how to use the bot", "id": "Panduan cara menggunakan bot"}
+        {"cmd": "help", "en": "Guide on how to use the bot", "id": "Panduan cara menggunakan bot", "en_helper": "This is the help page. Here you can find information on how to use the bot.", "id_helper": "Ini adalah halaman bantuan. Di sini Anda dapat menemukan informasi tentang cara menggunakan bot.", "en_seeker": "This is the help page. Here you can find information on how to use the bot.", "id_seeker": "Ini adalah halaman bantuan. Di sini Anda dapat menemukan informasi tentang cara menggunakan bot."}
     ]
     bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'), cmds)
     bot.start_polling()
