@@ -56,9 +56,6 @@ if __name__ == "__main__":
     bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'))
     cmds = [
     {"cmd": "start", "en": "Begin", "id": "Mulai"},
-    {"cmd": "random", "en": "Discover", "id": "Temukan"},
-    {"cmd": "helper", "en": "Assist", "id": "Bantu"},
-    {"cmd": "seeker", "en": "Seek", "id": "Cari"},
     {"cmd": "help", "en": "Guide on how to use the bot", "id": "Panduan cara menggunakan bot"}
     ]
     bot.set_commands(cmds)
