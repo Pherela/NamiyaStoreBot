@@ -16,14 +16,21 @@ class MiracleofNamiyaStoreBot:
         self.bot.message_handler(commands=['start'])(self.assign_role)
         self.bot.message_handler(func=lambda message: True)(self.forward_message)
         self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.reply_to_seeker)
-
+        self.bot.message_handler(func=lambda message: True, content_types=['text'])(self.write_letter)
+        
     def setup_database(self):
         self.conn = sqlite3.connect('user_roles.db', check_same_thread=False)
         self.cursor = self.conn.cursor()
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_roles (
-                chat_id INTEGER PRIMARY KEY,
+                chat_id INTEGER PRIMARY_KEY,
                 role TEXT
+            )
+        ''')
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS letters (
+                chat_id INTEGER,
+                letter TEXT
             )
         ''')
         self.conn.commit()
@@ -37,7 +44,12 @@ class MiracleofNamiyaStoreBot:
             self.cursor.execute('REPLACE INTO user_roles VALUES (?, ?)', (message.chat.id, chosen_role))
             self.conn.commit()
             self.bot.send_message(message.chat.id, f"You have been randomly assigned the role of {chosen_role}.")
-
+    def write_letter(self, message):
+        if self.user_roles.get(message.chat.id) == 'seeker' and not message.text.startswith('/'):
+            self.cursor.execute('INSERT INTO letters VALUES (?, ?)', (message.chat.id, message.text))
+            self.conn.commit()
+            self.bot.send_message(message.chat.id, "Your letter has been stored.")
+        
     def forward_message(self, message):
         if self.user_roles.get(message.chat.id) == 'seeker':
             for user_id, role in self.user_roles.items():
