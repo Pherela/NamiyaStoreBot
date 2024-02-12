@@ -62,5 +62,3 @@ if __name__ == "__main__":
     ]
     bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'), cmds)
     bot.start_polling()
-    bot = MiracleofNamiyaStoreBot(os.getenv('TELEGRAM_TOKEN'), cmds)
-    bot.start_polling()
