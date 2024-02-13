@@ -2,7 +2,7 @@ import os
 import random
 import sqlite3
 from dotenv import load_dotenv
-from telebot import TeleBot, types
+from telebot import TeleBot, types, util
 
 class MiracleofNamiyaStoreBot:
     def __init__(self, token, cmds):
@@ -16,11 +16,13 @@ class MiracleofNamiyaStoreBot:
         conn = sqlite3.connect('user_roles.db', check_same_thread=False)
         cursor = conn.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS user_roles (chat_id INTEGER PRIMARY KEY, role TEXT)')
+        cursor.execute('CREATE TABLE IF NOT EXISTS advice_letters (chat_id INTEGER, letter TEXT, advice TEXT)')
         return conn, cursor
 
     def set_handlers(self):
         self.bot.message_handler(commands=['start'])(self.assign_role)
         self.bot.message_handler(commands=['help'])(self.help_page)
+        self.bot.message_handler(func=lambda message: True)(self.send_letter)
 
     def get_role(self, chat_id):
         self.db[1].execute('SELECT role FROM user_roles WHERE chat_id = ?', (chat_id,))
@@ -39,6 +41,20 @@ class MiracleofNamiyaStoreBot:
 
     def help_page(self, message):
         self.send_message(message.chat.id, self.cmds[1], self.get_role(message.chat.id), message.from_user.language_code)
+
+    def send_letter(self, message):
+        if util.is_command(message.text):
+            self.bot.reply_to(message, "Commands are not stored as letters.")
+        else:
+            role = self.get_role(message.chat.id)
+            if role == 'seeker':
+                self.db[1].execute('INSERT INTO advice_letters (chat_id, letter) VALUES (?, ?)', (message.chat.id, message.text))
+                self.db[0].commit()
+                self.bot.reply_to(message, "Your letter has been sent. You'll receive a response soon.")
+            elif role == 'helper':
+                self.db[1].execute('UPDATE advice_letters SET advice = ? WHERE chat_id = (SELECT chat_id FROM advice_letters ORDER BY ROWID DESC LIMIT 1)', (message.text,))
+                self.db[0].commit()
+                self.bot.reply_to(message, "Your advice has been added to the most recent letter.")
 
     def start_polling(self):
         self.bot.infinity_polling(long_polling_timeout=20)
