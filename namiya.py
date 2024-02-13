@@ -6,11 +6,11 @@ class MiracleofNamiyaStoreBot:
     def __init__(self, token, cmds):
         self.bot = TeleBot(token)
         self.roles = ['helper', 'seeker']
-        self.db = self.setup_database()
+        self.db = self.init_db()
         self.cmds = cmds
         self.set_handlers()
 
-    def setup_database(self):
+    def init_db(self):
         conn = sqlite3.connect('user_roles.db', check_same_thread=False)
         cursor = conn.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS user_roles (chat_id INTEGER PRIMARY KEY, role TEXT)')
@@ -28,7 +28,7 @@ class MiracleofNamiyaStoreBot:
 
     def send_message(self, chat_id, cmd, role, lang_code):
         self.bot.send_message(chat_id, cmd[f'{lang_code}_{role}'])
-
+    ##REFACTOR assign_role MAKE IT MORE CONCISE
     def assign_role(self, message):
         if message.text == '/start':
             random.shuffle(self.roles)
@@ -42,7 +42,7 @@ class MiracleofNamiyaStoreBot:
 
     def send_letter(self, message):
         if util.is_command(message.text):
-            self.bot.reply_to(message, "Commands are not stored as letters.")
+            self.invalid_command(message)
         else:
             role = self.get_role(message.chat.id)
             if role == 'seeker':
@@ -53,6 +53,10 @@ class MiracleofNamiyaStoreBot:
                 self.db[1].execute('UPDATE advice_letters SET advice = ? WHERE chat_id = (SELECT chat_id FROM advice_letters ORDER BY ROWID DESC LIMIT 1)', (message.text,))
                 self.db[0].commit()
                 self.bot.reply_to(message, "Your advice has been added to the most recent letter.")
+
+    ##TODO ADD ABILITY TO CONSIDER LANGUAGE CODE AND ADD LOCALICATION AND STORE AND GET LOCALIZATION FROM CMDS NO NEED TO CONSIDER USER ROLES BUT CONSIDER USER LANGUAGE CODE AND IF USER LANGUAGE CODE NOT AVAILABLE IN CMDS DEFAULT TO EN
+    def invalid_command(self, message):
+        self.bot.reply_to(message, "The command you entered is not recognized. Please use /help for assistance.")
 
     def start_polling(self):
         self.bot.infinity_polling(long_polling_timeout=20)
