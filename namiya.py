@@ -1,6 +1,4 @@
-import os
-import random
-import sqlite3
+import os, random, sqlite3
 from dotenv import load_dotenv
 from telebot import TeleBot, types, util
 
