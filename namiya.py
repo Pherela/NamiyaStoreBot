@@ -15,7 +15,7 @@ class MiracleofNamiyaStoreBot:
     def setup_database(self):
         conn = sqlite3.connect('user_roles.db', check_same_thread=False)
         cursor = conn.cursor()
-        cursor.execute('CREATE TABLE IF NOT EXISTS user_roles (chat_id INTEGER PRIMARY_KEY, role TEXT)')
+        cursor.execute('CREATE TABLE IF NOT EXISTS user_roles (chat_id INTEGER PRIMARY KEY, role TEXT)')
         return conn, cursor
 
     def set_handlers(self):
@@ -33,7 +33,7 @@ class MiracleofNamiyaStoreBot:
         if message.text == '/start':
             random.shuffle(self.roles)
             chosen_role = self.roles[0]
-            self.db[1].execute('REPLACE INTO user_roles VALUES (?, ?)', (message.chat.id, chosen_role))
+            self.db[1].execute('INSERT OR REPLACE INTO user_roles VALUES (?, ?)', (message.chat.id, chosen_role))
             self.db[0].commit()
             self.send_message(message.chat.id, self.cmds[0], chosen_role, message.from_user.language_code)
 
